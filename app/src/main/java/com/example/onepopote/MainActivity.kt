@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.setContent
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.ui.tooling.preview.Preview
 import com.example.onepopote.ui.OnePopoteTheme
@@ -44,6 +45,7 @@ fun Calculator() {
         value = pasta,
         onValueChange = { pasta = it },
         keyboardType = KeyboardType.Number,
+        imeAction = ImeAction.Done,
         label = { Text("Pasta (g)") }
     )
     var acqua = 0;
