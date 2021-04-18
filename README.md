@@ -2,7 +2,7 @@
 
 One Popote aims at providing the perfect water to pasta ratio in a simple calculator.
 
-![screenshot](/screenshots/screenshot.jpg)
+![screenshot](/screenshots/screenshot.jpg =350x)
 
 ## Roadmap
 
