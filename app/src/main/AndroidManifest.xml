@@ -4,15 +4,16 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/one"
+        android:icon="@drawable/logo"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/one"
+        android:roundIcon="@drawable/logo"
         android:supportsRtl="true"
         android:theme="@style/Theme.OnePopote">
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/Theme.OnePopote.NoActionBar">
+            android:theme="@style/Theme.OnePopote.NoActionBar"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
