@@ -8,6 +8,7 @@ One Popote aims at providing the perfect water to pasta ratio in a simple calcul
 
 ## Roadmap
 
-* Integrated keyboard
+* ~~Integrated keyboard~~
 * Conversion between different units
+* Splash screen
 * Accept OK Google requests
