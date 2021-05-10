@@ -3,6 +3,7 @@ package com.example.onepopote
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,34 +17,64 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import androidx.compose.runtime.getValue
+import androidx.room.*
+import com.example.onepopote.tests.UnitsViewModel
 import com.example.onepopote.ui.*
 import java.lang.Integer.parseInt
 
 class MainActivity : ComponentActivity() {
+
+    private val unitsViewModel by viewModels<UnitsViewModel>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
             OnePopoteTheme {
                 Surface(color = MaterialTheme.colors.background) {
-                    Column (modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Bottom) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Bottom
+                    ) {
 
                         var pasta by remember { mutableStateOf("") }
-                        var acqua = 0;
+                        var acqua = 0
 
                         try {
-                            acqua = (parseInt(pasta) * 540) / 227;
-                        }
-                        catch (e: NumberFormatException) {
-                            acqua = 0;
+                            acqua = (parseInt(pasta) * 540) / 227
+                        } catch (e: NumberFormatException) {
+                            acqua = 0
                         }
 
-                        Row (modifier = Modifier.weight(2f), verticalAlignment = Alignment.CenterVertically) {
-                            BigDisplayer(acqua)
+                        var waterUnit = "ml"
+                        var pastaUnit = "g"
+                        if (!unitsViewModel.units.isEmpty()) {
+                            waterUnit = unitsViewModel.units.first().water
+                            pastaUnit = unitsViewModel.units.first().pasta
                         }
-                        Row (modifier = Modifier.weight(4f)) {
-                            Surface(modifier = Modifier.fillMaxHeight(), color = dark200, shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)) {
-                                Keyboard(pasta, onValueChange = { if (!pasta.isEmpty() || it != "0") { pasta += it } }, onReset = { pasta = it})
+
+                        Row(
+                            modifier = Modifier.weight(2f),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            BigDisplayer(acqua, unit = waterUnit)
+                        }
+                        Row(modifier = Modifier.weight(4f)) {
+                            Surface(
+                                modifier = Modifier.fillMaxHeight(),
+                                color = dark200,
+                                shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+                            ) {
+                                Keyboard(
+                                    pasta,
+                                    unit = pastaUnit,
+                                    onValueChange = {
+                                        if (!pasta.isEmpty() || it != "0") {
+                                            pasta += it
+                                        }
+                                    },
+                                    onReset = { pasta = it })
                             }
                         }
                     }
@@ -54,105 +85,185 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun BigDisplayer(acqua : Int = 0) {
-    Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+fun BigDisplayer(acqua: Int = 0, unit: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Text(text = acqua.toString(), fontSize = 18.em)
         Spacer(modifier = Modifier.width(20.dp))
-        Text(text = "ml")
+        Text(text = unit)
     }
 }
 
 @Composable
-fun Keyboard(value: String, onValueChange: (String) -> Unit, onReset: (String) -> Unit) {
+fun Keyboard(
+    value: String,
+    unit: String,
+    onValueChange: (String) -> Unit,
+    onReset: (String) -> Unit
+) {
 
     //var value by remember { mutableStateOf("") }
 
-    Column (modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-        Row (modifier = Modifier.weight(1f).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Column (modifier = Modifier
-                .weight(2f)
-                .fillMaxWidth()
-                .padding(end = 16.dp), horizontalAlignment = Alignment.End) {
-                Row (verticalAlignment = Alignment.CenterVertically){
+    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(2f)
+                    .fillMaxWidth()
+                    .padding(end = 16.dp), horizontalAlignment = Alignment.End
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     if (value.isEmpty()) {
-                        Text("0", fontSize = 12.em, textAlign = TextAlign.End, overflow = TextOverflow.Ellipsis, maxLines = 1)
+                        Text(
+                            "0",
+                            fontSize = 12.em,
+                            textAlign = TextAlign.End,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 1
+                        )
+                    } else {
+                        Text(
+                            value,
+                            fontSize = 12.em,
+                            textAlign = TextAlign.End,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 1
+                        )
                     }
-                    else {
-                        Text(value, fontSize = 12.em, textAlign = TextAlign.End, overflow = TextOverflow.Ellipsis, maxLines = 1)
-                    }
-                    Text("g", modifier = Modifier.padding(start = 16.dp))
+                    Text(unit, modifier = Modifier.padding(start = 16.dp))
                 }
             }
             Column(modifier = Modifier
-                .weight(1f).fillMaxHeight()
-                .clickable { onReset("") }, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                .weight(1f)
+                .fillMaxHeight()
+                .clickable { onReset("") },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
                 KeyboardKey(value = "Del")
             }
         }
-        Row (modifier = Modifier.weight(1f).fillMaxWidth()) {
-            Column (modifier = Modifier
-                .weight(1f).fillMaxHeight()
-                .clickable { onValueChange("7") }, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+        ) {
+            Column(modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .clickable { onValueChange("7") },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
                 KeyboardKey(value = "7")
             }
-            Column (modifier = Modifier
-                .weight(1f).fillMaxHeight()
-                .clickable { onValueChange("8") }, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            Column(modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .clickable { onValueChange("8") },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
                 KeyboardKey(value = "8")
             }
-            Column (modifier = Modifier
-                .weight(1f).fillMaxHeight()
-                .clickable { onValueChange("9") }, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            Column(modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .clickable { onValueChange("9") },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
                 KeyboardKey(value = "9")
             }
         }
-        Row (modifier = Modifier.weight(1f)) {
-            Column (modifier = Modifier
-                .weight(1f).fillMaxHeight()
-                .clickable { onValueChange("4") }, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+        Row(modifier = Modifier.weight(1f)) {
+            Column(modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .clickable { onValueChange("4") },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
                 KeyboardKey(value = "4")
             }
-            Column (modifier = Modifier
-                .weight(1f).fillMaxHeight()
-                .clickable { onValueChange("5") }, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            Column(modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .clickable { onValueChange("5") },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
                 KeyboardKey(value = "5")
             }
-            Column (modifier = Modifier
-                .weight(1f).fillMaxHeight()
-                .clickable { onValueChange("6") }, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            Column(modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .clickable { onValueChange("6") },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
                 KeyboardKey(value = "6")
             }
         }
-        Row (modifier = Modifier.weight(1f)) {
-            Column (modifier = Modifier
-                .weight(1f).fillMaxHeight()
-                .clickable { onValueChange("1") }, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+        Row(modifier = Modifier.weight(1f)) {
+            Column(modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .clickable { onValueChange("1") },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
                 KeyboardKey(value = "1")
             }
-            Column (modifier = Modifier
-                .weight(1f).fillMaxHeight()
-                .clickable { onValueChange("2") }, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            Column(modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .clickable { onValueChange("2") },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
                 KeyboardKey(value = "2")
             }
-            Column (modifier = Modifier
-                .weight(1f).fillMaxHeight()
-                .clickable { onValueChange("3") }, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            Column(modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .clickable { onValueChange("3") },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
                 KeyboardKey(value = "3")
             }
         }
-        Row (modifier = Modifier.weight(1f)) {
-            Column (modifier = Modifier
-                .weight(1f).fillMaxHeight(),
-                horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
             }
-            Column (modifier = Modifier
-                .weight(1f).fillMaxHeight()
-                .clickable { onValueChange("0") }, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            Column(modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .clickable { onValueChange("0") },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
                 KeyboardKey(value = "0")
             }
-            Column (modifier = Modifier
-                .weight(1f).fillMaxHeight(),
-                horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
             }
         }
     }
