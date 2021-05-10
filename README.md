@@ -10,5 +10,6 @@ One Popote aims at providing the perfect water to pasta ratio in a simple calcul
 
 * ~~Integrated keyboard~~
 * ~~Splash screen~~
-* Conversion between different units
+* WIP : Conversion between different units
+* Overflow management
 * Accept OK Google requests
